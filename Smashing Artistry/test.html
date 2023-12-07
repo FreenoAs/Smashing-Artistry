@@ -1,0 +1,36 @@
+<script src="https://cdn.jsdelivr.net/npm/p5@latest/lib/p5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/p5@latest/lib/addons/p5.dom.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ml5@latest/dist/ml5.min.js"></script>
+<script type="text/javascript">
+
+// Daniel Shiffman
+// https://thecodingtrain.com
+// https://youtu.be/WCJM9WIoudI
+// https://youtu.be/YqVbuMPIRwY
+let video;
+
+let x = 0;
+
+function setup() {
+  createCanvas(width, height);
+  pixelDensity(1);
+  video = createCapture(VIDEO);
+  video.size(width/4, height/4);
+  background(51);
+}
+
+function draw() {
+  video.loadPixels();
+  let w = video.width;
+  let h = video.height;
+  
+  // copy(srcImage, sx, sy, sw, sh, dx, dy, dw, dh)
+  copy(video, w/2, 0, 1, h, x, 0, 1, h);
+  
+  x = x + 1;
+  if (x > width) {
+    x = 0;
+  }
+}
+
+    </script>

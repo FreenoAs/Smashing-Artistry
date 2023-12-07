@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+
+<div>Teachable Machine Image Model - p5.js and ml5.js</div>
+<script src="https://cdn.jsdelivr.net/npm/p5@latest/lib/p5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/p5@latest/lib/addons/p5.dom.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ml5@latest/dist/ml5.min.js"></script>
+<script type="text/javascript">
+
+  // Classifier Variable
+  let classifier;
+
+  
+  // Video
+  let video;
+  let flippedVideo;
+  let regularVideo;
+  // To store the classification
+  let label = "";
+  let vScale = 1;
+  let x = 0;
+
+  let size = 7;
+
+  let startx = 0;
+  let starty = 0;
+
+  // Load the model first
+  function preload() {
+    classifier = ml5.imageClassifier('https://teachablemachine.withgoogle.com/models/Z-UG31dlB/');
+  }
+
+  function setup() {
+    createCanvas(640, 480);
+    // Create the video
+    video = createCapture(VIDEO);
+    video.size(640, 480);
+    video.hide();
+    flippedVideo = ml5.flipImage(video);
+    regularVideo = ml5.flipImage(video);
+    // Start classifying
+    classifyVideo();
+  }
+
+  function draw() {
+    background(0);
+    push();
+    // Draw the video
+    image(video, 0, 0);
+    noTint();
+    video.show();
+    video.size(width / vScale, height / vScale);
+    video.loadPixels();
+    if (label == "dirt") {
+      filter(THRESHOLD);
+    }
+    else if (label == "rubber") {
+      tint(255, 0, 150);
+    } 
+  else if (label == "grass") {
+    filter(POSTERIZE,3);
+    }
+    else if (label == "sand") {
+      filter(ERODE);
+    } 
+    else if (label == "wood") {
+      filter(GRAY);
+    } 
+    else if (label == "steel") {
+      filter(BLUR, 10);
+    } 
+  else if (label == "marble") {
+      tint(random(255), 100, 100);
+  } 
+    else if (label == "denim") {
+      video.loadPixels();
+      let w = video.width;
+      let h = video.height;
+      // copy(srcImage, sx, sy, sw, sh, dx, dy, dw, dh)
+      copy(video, w / 2, 0, 1, h, x, 0, 20, h);
+      x = x + 10;
+      if (x > width) {
+        x = 0;
+      }
+      copy(video, w / 2, 0, 10, h, x, 0, 20, h);
+    } 
+  else if (label == "carpet") {
+    noFill();
+    stroke(random(255),random(255),random(255));
+  rectMode(CENTER);
+
+  let offset = 0;
+  let rotations = 0;
+
+  for (let j = 0; j < 22; j++) {
+    offset += 1;
+    rotations += 1;
+    for (let i = 0; i < 12; i++) {
+      let ox = 134;
+      let oy = 113;
+      let x = ox + i * 37;
+      let y = oy + j * 37;
+
+      drawRect(x + random(-offset, offset), y + random(-offset, offset));
+    }
+    } 
+
+  function drawRect(x, y) {
+    push();
+      translate(x, y);
+      rotate(radians(random(-rotations, rotations)));
+      rect(0 - 90, 0 -  300, 37, 37);
+    pop();
+
+  }
+  }
+    else if (label == "paper") {
+      let size = floor(map(0, 0, width, 7, 40)); // maps mouseX value to element size
+
+  for (var starty = 0; starty < video.height; starty++) { // creates pixel index
+    for (var startx = 0; startx < video.width; startx++) {
+      var index = (startx + starty * video.width) * 4;
+      var r = video.pixels[index + 0];
+      var g = video.pixels[index + 1];
+      var b = video.pixels[index + 2];
+
+      var bright = ((0.3 * r) + (0.59 * g) + (0.11 * b)) // sets pixel value to adjusted grayscale
+
+      fill(bright) // fills element with adjusted grayscale
+
+      rect(startx, starty, size, size)
+      
+
+      startx = startx + size -1 // set new startx value
+    }
+    starty = starty + size -1 // set new starty value
+  }
+    } 
+    else if (label == "yarn") {
+      filter(DILATE);
+    } 
+    else if (label == "sponge") {
+      filter(OPAQUE);
+    } 
+    else if (label == "bouncy rubber") {
+      rotate(frameCount/20);
+      fill(random(255),random(255),random(255));
+      textSize(200);
+      textAlign(CENTER);
+      text(label, width / 2, height - 4);
+    } 
+  else if (label == "ice") {
+    filter(INVERT);
+    }
+   else if (label == "lava") {
+      flippedVideo.blend(regularVideo, 0, 0, width, height, width / 2, height / 2, width, height, BLEND)
+      image(flippedVideo, 0, 0);
+      image(regularVideo, 0, 0);
+    } 
+      else if (label == "no material" || "selecting material") {
+      video.size(width / vScale, height / vScale);
+    }
+    // Draw the label
+    fill(255);
+    textSize(16);
+    textAlign(CENTER);
+    text(label, width / 2, height - 4);
+  }
+
+  // Get a prediction for the current video frame
+  function classifyVideo() {
+    flippedVideo = ml5.flipImage(video)
+    classifier.classify(flippedVideo, gotResult);
+    flippedVideo.remove();
+
+  }
+
+  // When we get a result
+  function gotResult(error, results) {
+    // If there is an error
+    if (error) {
+      console.error(error);
+      return;
+    }
+    // The results are in an array ordered by confidence.
+    // console.log(results[0]);
+    label = results[0].label;
+    // Classifiy again!
+    classifyVideo();
+  }
+
+</script>
